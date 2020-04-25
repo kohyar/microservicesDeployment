@@ -1,0 +1,68 @@
+# docker-compose.yml
+version: '3'
+services: 
+  movies:
+    image: movies-app
+    container_name: movies
+    build:
+      context: ./movies
+      dockerfile: Dockerfile_movies
+    networks:
+      - app-network
+      - movies-network
+    ports:
+      - "8080:5000"
+    volumes:
+      - "./:/app"
+    depends_on:
+      - db_movies
+ 
+  db_movies:
+    image: mysql:5.7
+    container_name: db_movies
+    networks:
+      - movies-network
+    ports:
+      - "32000:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: movies
+      MYSQL_USER: movies
+      MYSQL_PASSWORD: movies
+
+
+  evaluations:
+    image: evaluations-app
+    container_name: evaluations
+    build:
+      context: ./evaluations/
+      dockerfile: Dockerfile_evaluations
+    networks:
+      - app-network
+      - evaluations-network
+    ports:
+      - "8081:5000"
+    volumes:
+      - "./:/app"
+    depends_on:
+      - db_evaluations
+ 
+  db_evaluations:
+    image: mysql:5.7
+    container_name: db_evaluations
+    networks:
+      - evaluations-network
+    ports:
+      - "32001:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: evaluations
+      MYSQL_USER: evaluations
+      MYSQL_PASSWORD: evaluations
+
+networks:
+  movies-network:
+  evaluations-network:
+  app-network:
+  
+  

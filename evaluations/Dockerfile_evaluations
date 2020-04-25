@@ -1,0 +1,46 @@
+FROM python:3.6-alpine
+
+RUN adduser -D evaluations
+
+WORKDIR /home/evaluations
+
+COPY requirements.txt requirements.txt
+RUN python -m venv venv
+RUN venv/bin/pip install --upgrade pip wheel
+RUN venv/bin/pip install -r requirements.txt
+RUN venv/bin/pip install gunicorn 
+
+COPY app app
+COPY evaluations.py config.py boot.sh ./
+COPY .flaskenv ./
+
+RUN chmod +x boot.sh
+
+RUN chown -R evaluations:evaluations ./
+USER evaluations
+
+EXPOSE 5000
+
+ENTRYPOINT ["./boot.sh"]
+
+
+# sudo docker build -t evaluations:latest .
+# sudo docker run --name evaluations  -p 8001:5001 --rm evaluations:latest
+
+# sudo docker run --name mysql_eval -d -e MYSQL_RANDOM_ROOT_PASSWORD=yes \
+#  -e MYSQL_DATABASE=evaluations -e MYSQL_USER=evaluations -e MYSQL_PASSWORD=evaluations \
+#      mysql/mysql-server:5.7
+
+# sudo docker run --name evaluations -p 8001:5001 --rm  \
+#     --link mysql_eval:dbserver \
+#     -e DATABASE_URL=mysql_eval+pymysql://evaluations:evaluations@dbserver/evaluations \
+#     evaluations:latest
+
+# sudo docker run --name evaluations -d -p 8001:5001 --rm  \
+#     --link mysql:dbserver \
+#     -e DATABASE_URL=mysql_eval+pymysql://evaluations:evaluations@dbserver/evaluations \
+#     evaluations:latest
+
+# sudo docker ps
+# sudo docker stop mysql_eval
+# sudo docker rm mysql_eval

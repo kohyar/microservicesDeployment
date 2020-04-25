@@ -1,0 +1,69 @@
+# docker-compose.yml
+version: '3'
+services: 
+  movies:
+    image: 127.0.0.1:5000/movies-app
+    container_name: movies
+    build:
+      context: ./movies
+      dockerfile: Dockerfile_movies
+    ports:
+      - "8080:5000"
+    depends_on:
+      - db_movies
+    deploy:
+      mode: replicated
+      replicas: 3
+      placement:
+        constraints: [node.role == worker]
+ 
+  db_movies:
+    image: mysql:5.7
+    container_name: db_movies
+    ports:
+      - "32000:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: movies
+      MYSQL_USER: movies
+      MYSQL_PASSWORD: movies
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == worker]
+
+
+  evaluations:
+    image: 127.0.0.1:5000/evaluations-app
+    container_name: evaluations
+    build:
+      context: ./evaluations/
+      dockerfile: Dockerfile_evaluations
+    ports:
+      - "8081:5000"
+    depends_on:
+      - db_evaluations
+    deploy:
+      mode: replicated
+      replicas: 3
+      placement:
+        constraints: [node.role == worker]
+ 
+  db_evaluations:
+    image: mysql:5.7
+    container_name: db_evaluations
+    ports:
+      - "32001:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: evaluations
+      MYSQL_USER: evaluations
+      MYSQL_PASSWORD: evaluations
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == worker]
+
+  
